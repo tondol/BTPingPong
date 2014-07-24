@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">BTPingPong</string>
+
+    <string name="title_activity_select">SelectActivity</string>
+
+    <string name="action_listen">Listen</string>
+    <string name="action_connect">Connect</string>
+    <string name="action_disconnect">Disconnect</string>
+    <string name="action_settings">Settings</string>
+
+</resources>
