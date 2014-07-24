@@ -15,13 +15,13 @@ import java.io.OutputStreamWriter;
  * Created by hosaka on 2014/07/24.
  */
 public class BTServerThread extends BTThread {
-    private BluetoothAdapter mBA = null;
+    private BluetoothAdapter mBluetoothAdapter = null;
     private BluetoothServerSocket mServerSocket = null;
     private BluetoothSocket mSocket = null;
 
     public BTServerThread(BTHandler handler) {
         super(handler);
-        mBA = BluetoothAdapter.getDefaultAdapter();
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     }
 
     @Override
@@ -31,7 +31,7 @@ public class BTServerThread extends BTThread {
         try {
             message = mHandler.obtainMessage(BTHandler.SERVER_STARTED);
             mHandler.sendMessage(message);
-            mServerSocket = mBA.listenUsingRfcommWithServiceRecord(mBA.getName(), MainActivity.SPP_UUID);
+            mServerSocket = mBluetoothAdapter.listenUsingRfcommWithServiceRecord(mBluetoothAdapter.getName(), MainActivity.SPP_UUID);
             mSocket = mServerSocket.accept(30000);
             message = mHandler.obtainMessage(BTHandler.SERVER_CONNECTED);
             mHandler.sendMessage(message);

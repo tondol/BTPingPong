@@ -8,29 +8,10 @@
         android:id="@+id/glsurfaceview"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-
-    <!--
-    <EditText
-        android:id="@+id/edittext"
+    <TextView
+        android:id="@+id/textview"
+        android:textSize="40dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true" />
-    <Button
-        android:id="@+id/button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/edittext"
-        android:text="Send" />
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/button"
-        android:layout_alignParentBottom="true">
-        <TextView
-            android:id="@+id/textview_debug"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-    </ScrollView>
-    -->
+        android:layout_height="wrap_content" />
 
 </RelativeLayout>

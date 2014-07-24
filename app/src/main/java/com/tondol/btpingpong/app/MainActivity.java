@@ -12,10 +12,8 @@ import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
-import android.view.View;
 import android.view.WindowManager;
-import android.widget.Button;
-import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.UUID;
@@ -28,28 +26,17 @@ public class MainActivity extends Activity implements BTHandler.Listener {
     private static final int REQUEST_SELECT_BT = 2;
     private static final int REQUEST_DISCOVERABLE_BT = 3;
 
-    // デバッグ用メソッドのために静的フィールドに保持しておく
-    private static MainActivity sActivity = null;
-
-    private BluetoothAdapter mBA = null;
+    private BluetoothAdapter mBluetoothAdapter = null;
+    private SoundManager mSoundManager = null;
     private GLSurfaceView mGLSurfaceView = null;
     private MyRenderer mRenderer = null;
-    private Handler mHandler = new Handler();
 
     public static void debug(String text) {
         android.util.Log.d(TAG, text);
-        if (sActivity == null) {
-            return;
-        }
-//        TextView textView = (TextView) sActivity.findViewById(R.id.textview_debug);
-//        if (textView == null) {
-//            return;
-//        }
-//        if (textView.getText().length() == 0) {
-//            textView.setText(text);
-//        } else {
-//            textView.setText(text + "\n" + textView.getText());
-//        }
+    }
+
+    public SoundManager getSoundManager() {
+        return mSoundManager;
     }
 
     @Override
@@ -57,25 +44,13 @@ public class MainActivity extends Activity implements BTHandler.Listener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        sActivity = this;
-        mBA = BluetoothAdapter.getDefaultAdapter();
-        if (mBA == null) {
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (mBluetoothAdapter == null) {
             Toast.makeText(this, "Bluetooth is not available", Toast.LENGTH_LONG).show();
             finish();
             return;
         }
-
-//        final EditText editText = (EditText) findViewById(R.id.edittext);
-//        Button button = (Button) findViewById(R.id.button);
-//        button.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                if (editText.getText().length() > 0) {
-//                    send(editText.getText().toString());
-//                }
-//                editText.setText("");
-//            }
-//        });
+        mSoundManager = new SoundManager(this);
 
         mRenderer = new MyRenderer(this);
         mGLSurfaceView = (GLSurfaceView) findViewById(R.id.glsurfaceview);
@@ -91,7 +66,7 @@ public class MainActivity extends Activity implements BTHandler.Listener {
 
         mGLSurfaceView.onResume();
 
-        if (!mBA.isEnabled()) {
+        if (!mBluetoothAdapter.isEnabled()) {
             Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(intent, REQUEST_ENABLE_BT);
         } else {
@@ -219,6 +194,7 @@ public class MainActivity extends Activity implements BTHandler.Listener {
             disconnect();
             return true;
         } else if (id == R.id.action_start) {
+            // TODO: 若干のランダム性を加える
             mRenderer.setSquarePosition(0.0, 0.0, 0.05, 0.05);
             setGameState(GameState.MyTurn, true);
             return true;
@@ -242,17 +218,36 @@ public class MainActivity extends Activity implements BTHandler.Listener {
 
     private NetworkState mNetworkState = NetworkState.Default;
     private GameState mGameState = GameState.Default;
+    private Handler mHandler = new Handler();
 
     public void setNetworkState(NetworkState state) {
         mNetworkState = state;
+
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                TextView textView = (TextView) findViewById(R.id.textview);
+                textView.setText("Game: " + mGameState.name() + " / Network: " + mNetworkState.name());
+            }
+        });
     }
 
     public GameState getGameState() {
         return mGameState;
     }
 
+    // 通知が必要かどうかを第2引数で指示する
     public void setGameState(GameState state, final boolean sending) {
         mGameState = state;
+
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                TextView textView = (TextView) findViewById(R.id.textview);
+                textView.setText("Game: " + mGameState.name() + " / Network: " + mNetworkState.name());
+            }
+        });
+
         if (mGameState == GameState.MyTurn) {
             if (sending) {
                 send("STATE:MY_TURN");
@@ -359,7 +354,7 @@ public class MainActivity extends Activity implements BTHandler.Listener {
             double y = Double.parseDouble(params[3]);
             double velocityX = Double.parseDouble(params[4]);
             double velocityY = Double.parseDouble(params[5]);
-            // X軸を反転する
+            // 座標系を180度回転させる
             mRenderer.setSquarePosition(-x, mRenderer.getDisplayRatio(), -velocityX, -velocityY);
             setGameState(GameState.MyTurn, false);
         } else if (params[0].equals("STATE") && params[1].equals("DEFAULT")) {

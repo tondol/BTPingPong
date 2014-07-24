@@ -154,21 +154,17 @@ public class MyRenderer implements GLSurfaceView.Renderer {
             if (mX < -(1.0 - mSide / 2.0)) {
                 mX = -(1.0 - mSide / 2.0);
                 mVelocityX *= -1.0;
+                mActivity.getSoundManager().playReflect();
             }
             if (mX > 1.0 - mSide / 2.0) {
                 mX = 1.0 - mSide / 2.0;
                 mVelocityX *= -1.0;
+                mActivity.getSoundManager().playReflect();
             }
-//            if (mY < -(mDisplayRatio - mSide / 2.0)) {
-//                mY = -(mDisplayRatio - mSide / 2.0);
-//                mVelocityY *= -1.0;
-//            }
-//            if (mY > mDisplayRatio - mSide / 2.0) {
-//                mY = mDisplayRatio - mSide / 2.0;
-//                mVelocityY *= -1.0;
-//            }
+
             if (intersected && mVelocityY < 0.0) {
                 mVelocityY *= -1.0;
+                mActivity.getSoundManager().playReflect();
             }
         }
 
@@ -263,8 +259,10 @@ public class MyRenderer implements GLSurfaceView.Renderer {
 
             if (mSquare.getY() < -mDisplayRatio) {
                 mActivity.setGameState(MainActivity.GameState.Default, true);
+                mActivity.getSoundManager().playLose();
             } else if (mSquare.getY() > mDisplayRatio) {
                 mActivity.setGameState(MainActivity.GameState.YourTurn, true);
+                mActivity.getSoundManager().playWin();
             }
 
             mPlayer.update(gl10, intersected);
