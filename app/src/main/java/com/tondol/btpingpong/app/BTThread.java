@@ -1,6 +1,5 @@
 package com.tondol.btpingpong.app;
 
-import android.bluetooth.BluetoothAdapter;
 import android.os.Message;
 
 import java.io.BufferedReader;
@@ -57,7 +56,7 @@ abstract public class BTThread extends Thread {
             receiveMessage();
         }
 
-        close();
+        ensureDisconnected();
     }
 
 
@@ -65,23 +64,26 @@ abstract public class BTThread extends Thread {
         return !mStopped && mReader != null && mWriter != null;
     }
 
-    public void close() {
+    public void ensureDisconnected() {
         mStopped = true;
 
         if (mReader != null) {
             try {
                 mReader.close();
             } catch (IOException e) {
-                android.util.Log.d(MainActivity.TAG, "BTThread#close - close(reader) error - " + e);
+                MainActivity.debug("BTThread#ensureDisconnected - reader error - " + e);
             }
         }
         if (mWriter != null) {
             try {
                 mWriter.close();
             } catch (IOException e) {
-                android.util.Log.d(MainActivity.TAG, "BTThread#close - close(writer) error - " + e);
+                MainActivity.debug("BTThread#ensureDisconnected - writer error - " + e);
             }
         }
+
+        mReader = null;
+        mWriter = null;
     }
 
     public void send(String line) {
@@ -89,8 +91,9 @@ abstract public class BTThread extends Thread {
             try {
                 mWriter.write(line, 0, line.length());
                 mWriter.newLine();
+                mWriter.flush();
             } catch (IOException e) {
-                android.util.Log.d(MainActivity.TAG, "BTThread#send - writer error - " + e);
+                MainActivity.debug("BTThread#send - error - " + e);
             }
         }
     }

@@ -39,10 +39,25 @@ public class BTClientThread extends BTThread {
             mReader = new BufferedReader(new InputStreamReader(mSocket.getInputStream()));
             mWriter = new BufferedWriter(new OutputStreamWriter(mSocket.getOutputStream()));
         } catch (IOException e) {
-            android.util.Log.i(MainActivity.TAG, "BTClientThread#retrieveSocket - error - " + e);
+            MainActivity.debug("BTClientThread#retrieveSocket - error - " + e);
             return false;
         }
 
         return true;
+    }
+
+    @Override
+    public void ensureDisconnected() {
+        super.ensureDisconnected();
+
+        if (mSocket != null) {
+            try {
+                mSocket.close();
+            } catch (IOException e) {
+                MainActivity.debug("BTServerThread#ensureDisconnected - socket error - " + e);
+            }
+        }
+
+        mSocket = null;
     }
 }

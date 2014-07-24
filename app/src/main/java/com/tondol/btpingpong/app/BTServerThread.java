@@ -15,11 +15,13 @@ import java.io.OutputStreamWriter;
  * Created by hosaka on 2014/07/24.
  */
 public class BTServerThread extends BTThread {
-    private BluetoothAdapter mBA = BluetoothAdapter.getDefaultAdapter();
+    private BluetoothAdapter mBA = null;
+    private BluetoothServerSocket mServerSocket = null;
     private BluetoothSocket mSocket = null;
 
     public BTServerThread(BTHandler handler) {
         super(handler);
+        mBA = BluetoothAdapter.getDefaultAdapter();
     }
 
     @Override
@@ -29,11 +31,11 @@ public class BTServerThread extends BTThread {
         try {
             message = mHandler.obtainMessage(BTHandler.SERVER_STARTED);
             mHandler.sendMessage(message);
-            BluetoothServerSocket serverSock = mBA.listenUsingRfcommWithServiceRecord(mBA.getName(), MainActivity.SPP_UUID);
-            mSocket = serverSock.accept(30000);
+            mServerSocket = mBA.listenUsingRfcommWithServiceRecord(mBA.getName(), MainActivity.SPP_UUID);
+            mSocket = mServerSocket.accept(30000);
             message = mHandler.obtainMessage(BTHandler.SERVER_CONNECTED);
             mHandler.sendMessage(message);
-            serverSock.close();
+            mServerSocket.close();
 
             mReader = new BufferedReader(new InputStreamReader(mSocket.getInputStream()));
             mWriter = new BufferedWriter(new OutputStreamWriter(mSocket.getOutputStream()));
@@ -45,5 +47,28 @@ public class BTServerThread extends BTThread {
         }
 
         return true;
+    }
+
+    @Override
+    public void ensureDisconnected() {
+        super.ensureDisconnected();
+
+        if (mSocket != null) {
+            try {
+                mSocket.close();
+            } catch (IOException e) {
+                MainActivity.debug("BTServerThread#ensureDisconnected - socket error - " + e);
+            }
+        }
+        if (mServerSocket != null) {
+            try {
+                mServerSocket.close();
+            } catch (IOException e) {
+                MainActivity.debug("BTServerThread#ensureDisconnected - server socket error - " + e);
+            }
+        }
+
+        mSocket = null;
+        mServerSocket = null;
     }
 }

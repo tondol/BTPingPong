@@ -24,29 +24,31 @@ import java.util.List;
 
 
 public class SelectActivity extends Activity {
-    private BluetoothAdapter mBA = BluetoothAdapter.getDefaultAdapter();
+    private BluetoothAdapter mBA = null;
+    private ArrayAdapter<BluetoothDevice> mAdapter = null;
     private List<BluetoothDevice> mDevices = new ArrayList<BluetoothDevice>();
-    private ArrayAdapter<BluetoothDevice> mAdapter =
-            new ArrayAdapter<BluetoothDevice>(this, R.layout.listview_device, mDevices) {
-                @Override
-                public View getView(int position, View convertView, ViewGroup parent) {
-                    if (convertView == null) {
-                        LayoutInflater inflater = LayoutInflater.from(getContext());
-                        convertView = inflater.inflate(R.layout.listview_device, parent, false);
-                    }
-
-                    BluetoothDevice device = getItem(position);
-                    String bonded = device.getBondState() == BluetoothDevice.BOND_BONDED ? " *" : "";
-                    ((TextView) convertView.findViewById(R.id.device_textview_name)).setText(device.getName() + bonded);
-                    ((TextView) convertView.findViewById(R.id.device_textview_address)).setText(device.getAddress());
-                    return convertView;
-                }
-            };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_select);
+
+        mBA = BluetoothAdapter.getDefaultAdapter();
+        mAdapter = new ArrayAdapter<BluetoothDevice>(this, R.layout.listview_device, mDevices) {
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                if (convertView == null) {
+                    LayoutInflater inflater = LayoutInflater.from(getContext());
+                    convertView = inflater.inflate(R.layout.listview_device, parent, false);
+                }
+
+                BluetoothDevice device = getItem(position);
+                String bonded = device.getBondState() == BluetoothDevice.BOND_BONDED ? " *" : "";
+                ((TextView) convertView.findViewById(R.id.device_textview_name)).setText(device.getName() + bonded);
+                ((TextView) convertView.findViewById(R.id.device_textview_address)).setText(device.getAddress());
+                return convertView;
+            }
+        };
 
         final ListView listView = (ListView) findViewById(R.id.listview);
         listView.setAdapter(mAdapter);
@@ -91,7 +93,10 @@ public class SelectActivity extends Activity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_reload) {
+            mDevices.clear();
+            mAdapter.notifyDataSetChanged();
+            startDiscovery();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -104,19 +109,19 @@ public class SelectActivity extends Activity {
             String action = intent.getAction();
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                android.util.Log.d(MainActivity.TAG, "BroadcastReceiver#onReceive - ACTION_FOUND - " + device);
+                MainActivity.debug("BroadcastReceiver#onReceive - ACTION_FOUND - " + device);
                 mAdapter.add(device);
                 mAdapter.notifyDataSetChanged();
             } else if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
-                android.util.Log.d(MainActivity.TAG, "BroadcastReceiver#onReceive - ACTION_DISCOVERY_STARTED");
+                MainActivity.debug("BroadcastReceiver#onReceive - ACTION_DISCOVERY_STARTED");
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-                android.util.Log.d(MainActivity.TAG, "BroadcastReceiver#onReceive - ACTION_DISCOVERY_FINISHED");
+                MainActivity.debug("BroadcastReceiver#onReceive - ACTION_DISCOVERY_FINISHED");
             }
         }
     };
 
     private void startDiscovery() {
-        android.util.Log.d(MainActivity.TAG, "SelectActivity#startDiscovery");
+        MainActivity.debug("SelectActivity#startDiscovery");
         IntentFilter filter = new IntentFilter();
         filter.addAction(BluetoothDevice.ACTION_FOUND);
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
@@ -130,7 +135,7 @@ public class SelectActivity extends Activity {
     }
 
     private void cancelDiscovery() {
-        android.util.Log.d(MainActivity.TAG, "SelectActivity#cancelDiscovery");
+        MainActivity.debug("SelectActivity#cancelDiscovery");
         if (mBA.isDiscovering()) {
             mBA.cancelDiscovery();
         }
