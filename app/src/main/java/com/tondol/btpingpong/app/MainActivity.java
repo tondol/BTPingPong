@@ -16,6 +16,7 @@ import android.view.WindowManager;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.Random;
 import java.util.UUID;
 
 
@@ -194,8 +195,13 @@ public class MainActivity extends Activity implements BTHandler.Listener {
             disconnect();
             return true;
         } else if (id == R.id.action_start) {
-            // TODO: 若干のランダム性を加える
-            mRenderer.setSquarePosition(0.0, 0.0, 0.05, 0.05);
+            // !開始座標と向きをランダムにする!
+            double x = Math.random() * 2.0 - 1.0;
+            double y = mRenderer.getDisplayRatio();
+            double theta = Math.random() * 2.0 / 3.0 * Math.PI + 7.0 / 6.0 * Math.PI;
+            double velocityX = 0.05 * Math.cos(theta);
+            double velocityY = 0.05 * Math.sin(theta);
+            mRenderer.setSquarePosition(x, y, velocityX, velocityY);
             setGameState(GameState.MyTurn, true);
             return true;
         }
@@ -354,7 +360,7 @@ public class MainActivity extends Activity implements BTHandler.Listener {
             double y = Double.parseDouble(params[3]);
             double velocityX = Double.parseDouble(params[4]);
             double velocityY = Double.parseDouble(params[5]);
-            // 座標系を180度回転させる
+            // !座標系を180度回転させる!
             mRenderer.setSquarePosition(-x, mRenderer.getDisplayRatio(), -velocityX, -velocityY);
             setGameState(GameState.MyTurn, false);
         } else if (params[0].equals("STATE") && params[1].equals("DEFAULT")) {

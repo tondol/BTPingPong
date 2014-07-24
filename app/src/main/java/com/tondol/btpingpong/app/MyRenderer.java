@@ -27,8 +27,9 @@ public class MyRenderer implements GLSurfaceView.Renderer {
 
     public MyRenderer(MainActivity activity) {
         mActivity = activity;
-        mPlayer = new Player(0.0, 0.5, 0.2);
-        mSquare = new Square(0.0, 0.0, 0.5, 0.05, 0.05);
+        // 初期値はテキトーに与える
+        mPlayer = new Player(0.0, 0.5, 0.1);
+        mSquare = new Square(0.0, 0.0, 0.5, 0.0, 0.0);
     }
 
     public double getDisplayRatio() {
@@ -163,7 +164,10 @@ public class MyRenderer implements GLSurfaceView.Renderer {
             }
 
             if (intersected && mVelocityY < 0.0) {
-                mVelocityY *= -1.0;
+                // !向きをランダムにする!
+                double theta = Math.random() * 2.0 / 3.0 * Math.PI + 1.0 / 6.0 * Math.PI;
+                mVelocityX = 0.05 * Math.cos(theta);
+                mVelocityY = 0.05 * Math.sin(theta);
                 mActivity.getSoundManager().playReflect();
             }
         }
@@ -252,9 +256,10 @@ public class MyRenderer implements GLSurfaceView.Renderer {
         if (mActivity.getGameState() == MainActivity.GameState.MyTurn) {
             // 交差判定
             // バーの上半分のみを接触範囲とする
+            // コマの下半分のみを接触範囲とする
             boolean intersected = mPlayer.getX() - mPlayer.getWidth() / 2.0 < mSquare.getX() + mSquare.getSide() / 2.0 &&
                     mPlayer.getX() + mPlayer.getWidth() / 2.0 > mSquare.getX() - mSquare.getSide() / 2.0 &&
-                    -(mDisplayRatio - mPlayer.getHeight() / 2.0) < mSquare.getY() + mSquare.getSide() / 2.0 &&
+                    -(mDisplayRatio - mPlayer.getHeight() / 2.0) < mSquare.getY() &&
                     -(mDisplayRatio - mPlayer.getHeight()) > mSquare.getY() - mSquare.getSide() / 2.0;
 
             if (mSquare.getY() < -mDisplayRatio) {
