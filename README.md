@@ -6,7 +6,7 @@ BTPingPong
 何をするアプリか
 ----
 
-Bluetooth通信（SPPプロファイル）により，2台の端末でPingPongの大戦が可能です。
+Bluetooth通信（SPPプロファイル）により，2台の端末でPingPongの対戦が可能です。
 
 使い方
 ----
@@ -23,6 +23,11 @@ ActionBarから「Start」すると，対戦がスタートします。
 ----
 
 [20140725SDL.pdf](https://github.com/tondol/BTPingPong/raw/master/20140725SDL.pdf)
+
+既知の不具合
+----
+
+- まだペアリング未設定のデバイス同士で対戦しようとすると失敗する
 
 使用素材
 ----
